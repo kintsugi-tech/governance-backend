@@ -279,7 +279,7 @@ export const setupApi = () => {
         const vote = new Vote();
         vote.proposal_id = vote_data.id;
         vote.chain_id = chain.name;
-        vote.address = chain.voter_address;
+        vote.address = vote_data.voter;
         vote.option = vote_data.option;
         vote.transaction_hash = tx_data.tx_response.txhash;
         vote.block_height = tx_data.tx_response.height;

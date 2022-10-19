@@ -90,9 +90,16 @@ export const getProposalVoteFromLog = (rawlog: string) => {
   const proposal_id_attr = vote_event.attributes.find((e) => e.key === 'proposal_id');
   const id = parseInt(proposal_id_attr.value);
 
+  // find message event
+  const message_event = log.events.find((e) => e.type === 'message');
+
+  // Get voter address
+  const sender = message_event.attributes.find((e) => e.key === 'sender');
+
   return {
     id,
     option,
     weight,
+    voter: sender.value,
   };
 };
