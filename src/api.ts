@@ -4,12 +4,12 @@ import { AppDataSource, populateDB } from './data-source';
 import * as bp from 'body-parser';
 import * as cors from 'cors';
 
-import { CHAINS } from './constants';
+import { CHAINS, cfg } from './constants';
 import { Vote } from './entity/Vote';
 import { Between, FindOptionsWhere, MoreThan } from 'typeorm';
 import { getAllAddresses, getProposalVoteFromLog, getTxInfo } from './cosmos-client';
 import { getMondayOfWeek } from './utils';
-import { cfg } from 'config';
+import { SendSlackNotification } from './slack';
 
 export const setupApi = () => {
   const app = express();
@@ -303,8 +303,23 @@ export const setupApi = () => {
     }
   });
 
+  app.get("/test", async (req, res) => {
+
+    const propRepo = AppDataSource.getRepository(Proposal);
+    const proposals = await propRepo.findOne({
+      where: {
+        chain_id: "juno",
+        id: 280
+      },
+      relations: ['votes'],
+    });
+
+    let response = await SendSlackNotification(proposals)
+    res.json(response)
+  })
+
   app.listen(port, () => {
-    console.log(`API listening on port ${port}.`);
+    console.log(`Governance API listening on port ${port}.`);
   });
   return app;
 };

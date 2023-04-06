@@ -1,3 +1,5 @@
+import * as dotenv from 'dotenv';
+
 export const CHAINS = [
   {
     name: 'cosmoshub',
@@ -20,3 +22,17 @@ export const CHAINS = [
   { name: 'regen', chain_id: 'regen-1', prefix: 'regen', voter_address: 'regen15qepg86xxesg7k633ent5t9vaweyf5zt5fhyuc' },
   { name: 'sentinel', chain_id: 'sentinelhub-2', prefix: 'sent', voter_address: 'sent15nr70ed65h8gnwpn879u8pvtjcy7mt6cy4qatm' },
 ];
+
+// Setup env
+dotenv.config();
+
+export const cfg = {
+    ProposalScanFrequency: process.env.PROPOSAL_SCAN_FREQUENCY || "0 */5 * * *",
+  
+    ApiPort: process.env.API_PORT || 3031,
+
+    SlackBotToken: process.env.SLACK_BOT_TOKEN || "",
+    SlackSigningSecret: process.env.SLACK_SIGNING_SECRET || "",
+    SlackChannelID: process.env.SLACK_CHANNEL_ID || "",
+    SlackAPIPort: process.env.SLAC_API_PORT || 3000
+}

@@ -4,6 +4,7 @@ import { Proposal } from './entity/Proposal';
 import { Vote } from './entity/Vote';
 import { CHAINS } from './constants';
 import { getAllProposals } from './cosmos-client';
+import { SendSlackNotification } from './slack';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -37,6 +38,9 @@ export const populateDB = async () => {
       try {
         await AppDataSource.manager.save(prop);
         newProps++;
+
+        // notificate new proposal
+        SendSlackNotification(prop)
       } catch (error) {
         // Log duplicate proposal
         if (error.code === '23505') {
