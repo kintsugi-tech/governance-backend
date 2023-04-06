@@ -9,10 +9,11 @@ import { Vote } from './entity/Vote';
 import { Between, FindOptionsWhere, MoreThan } from 'typeorm';
 import { getAllAddresses, getProposalVoteFromLog, getTxInfo } from './cosmos-client';
 import { getMondayOfWeek } from './utils';
+import { cfg } from 'config';
 
 export const setupApi = () => {
   const app = express();
-  const port = 3001;
+  const port = cfg.ApiPort;
 
   app.use(bp.json());
   app.use(bp.urlencoded({ extended: true }));
@@ -300,12 +301,6 @@ export const setupApi = () => {
       res.json({ success: false, message: 'Missing params' });
       return;
     }
-  });
-
-  // Populate db
-  app.get('/populate_db', async (req, res) => {
-    const [totalProps, newProps] = await populateDB();
-    res.json({ success: true, message: 'done', newProps, totalProps });
   });
 
   app.listen(port, () => {
