@@ -36,11 +36,11 @@ export const populateDB = async () => {
       totalProps++;
 
       try {
-        let savedProp = await AppDataSource.manager.save(prop);
+        await AppDataSource.manager.save(prop);
         newProps++;
 
         // notificate new proposal
-        SendSlackNotification(savedProp)
+        SendSlackNotification(prop)
       } catch (error) {
         // Log duplicate proposal
         if (error.code === '23505') {

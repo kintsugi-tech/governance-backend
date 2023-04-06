@@ -8,9 +8,7 @@ import { setupSlack } from './slack';
 AppDataSource.initialize()
   .then(async () => {
     // Scan proposals every 5 minutes
-    console.log(cfg.ProposalScanFrequency)
     cron.schedule(cfg.ProposalScanFrequency, async () => {
-      console.log("ziocan")
       populateDB();
     });
     
@@ -19,8 +17,6 @@ AppDataSource.initialize()
 
     // Setup Slack API (Default port 3000)
     setupSlack();
-
-
   })
   .catch((error) => {
     console.error(error);

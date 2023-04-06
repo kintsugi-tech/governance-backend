@@ -18,6 +18,8 @@ export const setupSlack = () => {
 
 export const SendSlackNotification = async (proposal: Proposal) => {
 
+    const voting_end = new Date(proposal.voting_end)
+
     let msg = {
         "channel": cfg.SlackChannelID,
         "text": `[${proposal.chain_id}] #${proposal.id}: ${proposal.title}`,
@@ -39,7 +41,7 @@ export const SendSlackNotification = async (proposal: Proposal) => {
                     },
                     {
                         "type": "mrkdwn",
-                        "text": `*Expiring:* ${proposal.voting_end.toLocaleDateString()} ${proposal.voting_end.toLocaleTimeString()}`
+                        "text": `*Expiring:* ${voting_end.toLocaleDateString()} ${voting_end.toLocaleTimeString()}`
                     }
                 ]
             },
