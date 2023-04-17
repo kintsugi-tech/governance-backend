@@ -49,7 +49,7 @@ export const SendSlackNotification = async (proposal: Proposal) => {
                 "type": "section",
                 "text": {
                     "type": "plain_text",
-                    "text": `${proposal.description}`,
+                    "text": `${proposal.description.substring(0, 2500)}`,
                     "emoji": true
                 }
             },
