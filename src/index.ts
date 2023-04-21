@@ -1,9 +1,10 @@
 import { AppDataSource, populateDB } from './data-source';
 import 'reflect-metadata';
 import { setupApi } from './api';
-import * as cron from "node-cron";
-import { cfg } from "./constants";
+import * as cron from 'node-cron';
+import { cfg } from './constants';
 import { setupSlack } from './slack';
+import summarizeProposalDescription from './governance-ai';
 
 AppDataSource.initialize()
   .then(async () => {
@@ -11,9 +12,9 @@ AppDataSource.initialize()
     cron.schedule(cfg.ProposalScanFrequency, async () => {
       populateDB();
     });
-    
+
     // Setup Governance API (Default port 3031)
-    setupApi()
+    setupApi();
 
     // Setup Slack API (Default port 3000)
     setupSlack();

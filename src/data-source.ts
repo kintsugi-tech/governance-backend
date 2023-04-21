@@ -40,7 +40,7 @@ export const populateDB = async () => {
         newProps++;
 
         // notificate new proposal
-        SendSlackNotification(prop)
+        SendSlackNotification(prop);
       } catch (error) {
         // Log duplicate proposal
         if (error.code === '23505') {
