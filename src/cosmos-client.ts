@@ -18,32 +18,23 @@ export const getAllAddresses = (address: string) => {
 
 export const getAllProposals = async (chain_name: string) => {
   try {
-    const res = await axios.get(`https://rest.cosmos.directory/${chain_name}/gov/proposals?limit=1000`);
+
+    // GET only voting period proposals
+    const res = await axios.get(`https://rest.cosmos.directory/${chain_name}/cosmos/gov/v1beta1/proposals?proposal_status=PROPOSAL_STATUS_VOTING_PERIOD&pagination.limit=5000`);
 
     const proposals = [];
 
-    for (const prop of res.data.result) {
-      // Skip proposals in deposit state
-      if (prop.status === 1) {
-        continue;
-      }
+    for (const prop of res.data.proposals) {
 
       const proposal = new Proposal();
-      proposal.id = prop.id;
+      proposal.id = prop.proposal_id;
       proposal.voting_start = prop.voting_start_time;
       proposal.voting_end = prop.voting_end_time;
       proposal.meta = '{}';
 
-      // SDK is so dumb that some proposals have a total different structure
-      if (prop.content.type === undefined) {
-        proposal.type = 'unknown';
-        proposal.title = prop.content.title;
-        proposal.description = prop.content.description;
-      } else {
-        proposal.type = prop.content.type;
-        proposal.title = prop.content.value.title;
-        proposal.description = prop.content.value.description;
-      }
+      proposal.type = prop.content['@type'];
+      proposal.title = prop.content.title;
+      proposal.description = prop.content.description;
 
       proposals.push(proposal);
     }
