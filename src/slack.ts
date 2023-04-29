@@ -1,7 +1,7 @@
 import { cfg } from './constants';
 import { WebClient, LogLevel } from '@slack/web-api';
 import { Proposal } from 'entity/Proposal';
-import { App } from '@slack/bolt';
+import { App, BlockAction, BlockElementAction, ButtonAction, SlackAction } from '@slack/bolt';
 import summarizeProposalDescription from './governance-ai';
 
 export const setupSlack = () => {
@@ -9,11 +9,152 @@ export const setupSlack = () => {
   const slack = new App({
     token: cfg.SlackBotToken,
     signingSecret: cfg.SlackSigningSecret,
+    appToken: cfg.SlackAppToken,
+    socketMode: true
   });
 
-  slack.start(cfg.SlackAPIPort);
+  slack.start();
 
   console.log(`Slack API listeining on port ${cfg.SlackAPIPort}.`);
+
+  // Listen for vote button clicks and open a new modal asking for reason
+  slack.action('vote', async ({ body, ack, say, client, logger }) => {
+    let typed_body = <BlockAction>body;
+
+    // Get chain name and proposal id
+    let [proposal_chain, proposal_id] = (<ButtonAction>typed_body.actions[0]).value.split("-")
+    
+    // Open modal
+    try {
+      let modal = await client.views.open({
+        trigger_id: typed_body.trigger_id,
+        view: {
+          type: 'modal',
+          private_metadata: JSON.stringify({proposal: {id: proposal_id, chain: proposal_chain}, ts: typed_body.message.ts}),
+          // View identifier
+          callback_id: 'vote_proposal',
+          title: {
+            type: 'plain_text',
+            text: 'Vote Proposal'
+          },
+          blocks: [
+            {
+              type: "context",
+              elements: [
+                {
+                  type: "plain_text",
+                  text: `Chain: ${proposal_chain}`,
+                  emoji: true
+                },
+                {
+                  type: "plain_text",
+                  text: `ID: ${proposal_id}`,
+                  emoji: true
+                }
+              ]
+            },
+            {
+              type: 'input',
+              block_id: 'input_c',
+              label: {
+                type: 'plain_text',
+                text: `Write the reason of your vote on ${proposal_chain} proposal #${proposal_id}`
+              },
+              element: {
+                type: 'plain_text_input',
+                action_id: 'dreamy_input',
+                multiline: false
+              }
+            },
+            {
+              type: "input",
+              element: {
+                type: "static_select",
+                placeholder: {
+                  type: "plain_text",
+                  text: "Select an item",
+                  emoji: true
+                },
+                options: [
+                  {
+                    text: {
+                      type: "plain_text",
+                      text: "YES 👍",
+                      emoji: true
+                    },
+                    value: "yes"
+                  },
+                  {
+                    text: {
+                      type: "plain_text",
+                      text: "No ❌",
+                    },
+                    value: "no"
+                  },
+                  {
+                    text: {
+                      type: "plain_text",
+                      text: "Abstian 🤷",
+                      emoji: true
+                    },
+                    value: "abstain"
+                  },
+                  {
+                    text: {
+                      type: "plain_text",
+                      text: "Veto 🚨",
+                      emoji: true
+                    },
+                    value: "veto"
+                  }
+                ],
+                action_id: "static_select-action"
+              },
+              label: {
+                type: "plain_text",
+                text: "How do you want to vote?",
+                emoji: true
+              }
+            },
+            {
+              type: 'context',
+              elements: [
+                {
+                  type: 'mrkdwn',
+                  text: `Make sure to read the full proposal before voting!\n ↗️ <https://mintscan.io/${proposal_chain}/proposals/${proposal_id}|Proposal Details>`,
+                },
+              ],
+            }
+          ],
+          submit: {
+            type: 'plain_text',
+            text: 'Vote Now',
+          }
+        }
+      })
+
+      logger.info(modal);
+
+
+    } catch (error) {
+      logger.error(error);
+    }
+
+    // Acknowledge action request
+    await ack();
+    // await say({text: 'Request approved 👍', thread_ts: typed_body.message.ts});
+  });
+
+  // Listen for view submit, broadcast vote transaction with memo
+  slack.view('vote_proposal', async ({ ack, body, view, client, logger }) => {
+
+    // todo: add vote logic
+
+    logger.info(body)
+    // Acknowledge the view_submission request
+    await ack();
+  });
+
 };
 
 export const SendSlackNotification = async (proposal: Proposal) => {
@@ -62,38 +203,11 @@ export const SendSlackNotification = async (proposal: Proposal) => {
             text: {
               type: 'plain_text',
               emoji: true,
-              text: '👍 Yes',
+              text: 'Open Voting Modal',
             },
-            value: 'yes',
-          },
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              emoji: true,
-              text: '👎 No',
-            },
-            value: 'no',
-          },
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              emoji: true,
-              text: '🤷 Abstain',
-            },
-            value: 'abstain',
-          },
-          {
-            type: 'button',
-            text: {
-              type: 'plain_text',
-              emoji: true,
-              text: '🚨 Veto',
-            },
-            style: 'danger',
-            value: 'veto',
-          },
+            value: `${proposal.chain_id}-${proposal.id}`,
+            action_id: 'vote'
+          }
         ],
       },
       {

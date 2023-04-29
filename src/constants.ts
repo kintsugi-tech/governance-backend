@@ -38,6 +38,7 @@ export const cfg = {
 
   SlackBotToken: process.env.SLACK_BOT_TOKEN || '',
   SlackSigningSecret: process.env.SLACK_SIGNING_SECRET || '',
+  SlackAppToken: process.env.SLACK_APP_TOKEN || '',
   SlackChannelID: process.env.SLACK_CHANNEL_ID || '',
   SlackAPIPort: process.env.SLAC_API_PORT || 3000,
 
