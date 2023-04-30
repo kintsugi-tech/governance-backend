@@ -18,16 +18,16 @@ export const getAllAddresses = (address: string) => {
 
 export const getAllProposals = async (chain_name: string) => {
   try {
-
-    console.log(`Fetching proposals for ${chain_name}..`)
+    console.log(`Fetching proposals for ${chain_name}..`);
 
     // GET only voting period proposals
-    const res = await axios.get(`https://rest.cosmos.directory/${chain_name}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`);
+    const res = await axios.get(
+      `https://rest.cosmos.directory/${chain_name}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`,
+    );
 
     const proposals = [];
 
     for (const prop of res.data.proposals) {
-
       const proposal = new Proposal();
       proposal.id = prop.proposal_id;
       proposal.voting_start = prop.voting_start_time;

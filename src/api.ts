@@ -1,13 +1,13 @@
 import { Proposal } from './entity/Proposal';
 import * as express from 'express';
-import { AppDataSource, addTxToIndexingQueue, indexTx, populateDB } from './data-source';
+import { AppDataSource, addTxToIndexingQueue, indexTx } from './data-source';
 import * as bp from 'body-parser';
 import * as cors from 'cors';
 
 import { CHAINS, cfg } from './constants';
 import { Vote } from './entity/Vote';
 import { Between, FindOptionsWhere, MoreThan } from 'typeorm';
-import { getAllAddresses, getProposalVoteFromLog, getTxInfo } from './cosmos-client';
+import { getAllAddresses } from './cosmos-client';
 import { getMondayOfWeek } from './utils';
 import { SendSlackNotification } from './slack';
 
@@ -268,7 +268,7 @@ export const setupApi = () => {
       }
 
       try {
-        let vote = await indexTx(data.chain_name, hash);
+        const vote = await indexTx(data.chain_name, hash);
         res.json(vote);
       } catch (error) {
         console.log(error);
@@ -286,20 +286,19 @@ export const setupApi = () => {
     }
   });
 
-  app.get("/test", async (req, res) => {
-
+  app.get('/test', async (req, res) => {
     const propRepo = AppDataSource.getRepository(Proposal);
     const proposals = await propRepo.findOne({
       where: {
-        chain_id: "juno",
-        id: 280
+        chain_id: 'juno',
+        id: 280,
       },
       relations: ['votes'],
     });
 
-    let response = await SendSlackNotification(proposals)
-    res.json(response)
-  })
+    const response = await SendSlackNotification(proposals);
+    res.json(response);
+  });
 
   app.listen(port, () => {
     console.log(`Governance API listening on port ${port}.`);

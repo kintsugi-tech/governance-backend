@@ -8,6 +8,6 @@ export class Queue {
   @Column({ comment: 'Chain name' })
   chain_name: string;
 
-  @Column({comment: "Count of tries"})
+  @Column({ comment: 'Count of tries' })
   try_count: number;
 }

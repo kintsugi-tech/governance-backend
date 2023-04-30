@@ -4,7 +4,6 @@ import { setupApi } from './api';
 import * as cron from 'node-cron';
 import { cfg } from './constants';
 import { setupSlack } from './slack';
-import summarizeProposalDescription from './governance-ai';
 
 AppDataSource.initialize()
   .then(async () => {

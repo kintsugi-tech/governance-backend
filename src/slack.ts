@@ -1,10 +1,10 @@
 import { cfg } from './constants';
 import { WebClient, LogLevel } from '@slack/web-api';
 import { Proposal } from './entity/Proposal';
-import { App, BlockAction, BlockElementAction, ButtonAction, SlackAction } from '@slack/bolt';
+import { App, BlockAction, ButtonAction } from '@slack/bolt';
 import summarizeProposalDescription from './governance-ai';
 import { VoteOption } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
-import { voteProposal, VoteRequest } from './cosmos-signer';
+import { voteProposal } from './cosmos-signer';
 import { AppDataSource, addTxToIndexingQueue } from './data-source';
 
 export const setupSlack = () => {
@@ -13,7 +13,7 @@ export const setupSlack = () => {
     token: cfg.SlackBotToken,
     signingSecret: cfg.SlackSigningSecret,
     appToken: cfg.SlackAppToken,
-    socketMode: true
+    socketMode: true,
   });
 
   slack.start();
@@ -22,110 +22,110 @@ export const setupSlack = () => {
 
   // Listen for vote button clicks and open a new modal asking for reason
   slack.action('vote', async ({ body, ack, say, client, logger }) => {
-    let typed_body = <BlockAction>body;
+    const typed_body = <BlockAction>body;
 
     // Check if user is allowed
     if (cfg.SlackAllowedVoteUsers.indexOf(body.user.id) < 0) {
-      await say({text: `User ${typed_body.user.name} is not allowed to vote proposals!`, thread_ts: typed_body.message.ts})
+      await say({ text: `User ${typed_body.user.name} is not allowed to vote proposals!`, thread_ts: typed_body.message.ts });
       await ack();
-      return
+      return;
     }
 
     // Get chain name and proposal id
-    let [proposal_chain, proposal_id] = (<ButtonAction>typed_body.actions[0]).value.split("-")
-    
+    const [proposal_chain, proposal_id] = (<ButtonAction>typed_body.actions[0]).value.split('-');
+
     // Open modal
     try {
-      let modal = await client.views.open({
+      const modal = await client.views.open({
         trigger_id: typed_body.trigger_id,
         view: {
           type: 'modal',
-          private_metadata: JSON.stringify({proposal: {id: proposal_id, chain: proposal_chain}, ts: typed_body.message.ts}),
+          private_metadata: JSON.stringify({ proposal: { id: proposal_id, chain: proposal_chain }, ts: typed_body.message.ts }),
           // View identifier
           callback_id: 'vote_proposal',
           title: {
             type: 'plain_text',
-            text: 'Vote Proposal'
+            text: 'Vote Proposal',
           },
           blocks: [
             {
-              type: "context",
+              type: 'context',
               elements: [
                 {
-                  type: "plain_text",
+                  type: 'plain_text',
                   text: `Chain: ${proposal_chain}`,
-                  emoji: true
+                  emoji: true,
                 },
                 {
-                  type: "plain_text",
+                  type: 'plain_text',
                   text: `ID: ${proposal_id}`,
-                  emoji: true
-                }
-              ]
+                  emoji: true,
+                },
+              ],
             },
             {
               type: 'input',
               block_id: 'input_memo',
               label: {
                 type: 'plain_text',
-                text: `Write the reason of your vote on ${proposal_chain} proposal #${proposal_id}`
+                text: `Write the reason of your vote on ${proposal_chain} proposal #${proposal_id}`,
               },
               element: {
                 type: 'plain_text_input',
                 action_id: 'memo_action',
-                multiline: false
-              }
+                multiline: false,
+              },
             },
             {
-              type: "input",
+              type: 'input',
               block_id: 'input_vote',
               element: {
-                type: "static_select",
+                type: 'static_select',
                 placeholder: {
-                  type: "plain_text",
-                  text: "Select a vote option",
-                  emoji: true
+                  type: 'plain_text',
+                  text: 'Select a vote option',
+                  emoji: true,
                 },
                 options: [
                   {
                     text: {
-                      type: "plain_text",
-                      text: "YES 👍",
-                      emoji: true
+                      type: 'plain_text',
+                      text: 'YES 👍',
+                      emoji: true,
                     },
-                    value: "yes"
+                    value: 'yes',
                   },
                   {
                     text: {
-                      type: "plain_text",
-                      text: "No ❌",
+                      type: 'plain_text',
+                      text: 'No ❌',
                     },
-                    value: "no"
+                    value: 'no',
                   },
                   {
                     text: {
-                      type: "plain_text",
-                      text: "Abstian 🤷",
-                      emoji: true
+                      type: 'plain_text',
+                      text: 'Abstian 🤷',
+                      emoji: true,
                     },
-                    value: "abstain"
+                    value: 'abstain',
                   },
                   {
                     text: {
-                      type: "plain_text",
-                      text: "Veto 🚨",
-                      emoji: true
+                      type: 'plain_text',
+                      text: 'Veto 🚨',
+                      emoji: true,
                     },
-                    value: "veto"
-                  }
+                    value: 'veto',
+                  },
                 ],
-                action_id: "vote_action"
+                action_id: 'vote_action',
               },
               label: {
-                type: "plain_text",
-                text: "How do you want to vote?",
-                emoji: true
-              }
+                type: 'plain_text',
+                text: 'How do you want to vote?',
+                emoji: true,
+              },
             },
             {
               type: 'context',
@@ -135,18 +135,16 @@ export const setupSlack = () => {
                   text: `Make sure to read the full proposal before voting!\n ↗️ <https://mintscan.io/${proposal_chain}/proposals/${proposal_id}|Proposal Details>`,
                 },
               ],
-            }
+            },
           ],
           submit: {
             type: 'plain_text',
             text: 'Vote Now',
-          }
-        }
-      })
+          },
+        },
+      });
 
       logger.info(modal);
-
-
     } catch (error) {
       logger.error(error);
     }
@@ -156,37 +154,47 @@ export const setupSlack = () => {
   });
 
   // Listen for view submit, broadcast vote transaction with memo
-  slack.view('vote_proposal', async ({ ack, body, view, client, logger }) => {
-
+  slack.view('vote_proposal', async ({ ack, view, client, logger }) => {
     // unpack meta
-    let {proposal, ts} = JSON.parse(view.private_metadata);
+    const { proposal, ts } = JSON.parse(view.private_metadata);
 
     // Get vote option & memo
     const memo = view.state.values['input_memo']['memo_action'].value;
     const vote_option = view.state.values['input_vote']['vote_action'].selected_option.value;
 
-    logger.info(memo)
-    logger.info(vote_option)
+    logger.info(memo);
+    logger.info(vote_option);
 
     // Acknowledge the view_submission request
     await ack();
-    
+
     // Vote Proposal
     const propRepo = AppDataSource.getRepository(Proposal);
-    const propDb = await propRepo.findOneBy({id: proposal.id});
+    const propDb = await propRepo.findOneBy({ id: proposal.id });
 
-    voteProposal(propDb, {vote_option: voteInputToOption(vote_option), memo}).then(async (tx) => {
-      // send message in thread
-      await client.chat.postMessage({ mrkdwn: true, text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${proposal.chain}/txs/${tx.transactionHash}|See in explorer>`, thread_ts: ts, channel: cfg.SlackChannelID })
-      
-      // add tx to indexing queue
-      addTxToIndexingQueue(proposal.chain, tx.transactionHash).catch((e) => logger.error(`Can't add tx to indexing queue. ${e}`));
+    voteProposal(propDb, { vote_option: voteInputToOption(vote_option), memo })
+      .then(async (tx) => {
+        // send message in thread
+        await client.chat.postMessage({
+          mrkdwn: true,
+          text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${proposal.chain}/txs/${tx.transactionHash}|See in explorer>`,
+          thread_ts: ts,
+          channel: cfg.SlackChannelID,
+        });
 
-    }).catch(async (error) => {
-      logger.error(error)
-      await client.chat.postMessage({ text: `⚠ Error voting ${vote_option} on ${proposal.chain} proposal #${proposal.id}! ⚠\n\`${error}\``, thread_ts: ts, channel: cfg.SlackChannelID })
-    });
-
+        // add tx to indexing queue
+        addTxToIndexingQueue(proposal.chain, tx.transactionHash).catch((e) =>
+          logger.error(`Can't add tx to indexing queue. ${e}`),
+        );
+      })
+      .catch(async (error) => {
+        logger.error(error);
+        await client.chat.postMessage({
+          text: `⚠ Error voting ${vote_option} on ${proposal.chain} proposal #${proposal.id}! ⚠\n\`${error}\``,
+          thread_ts: ts,
+          channel: cfg.SlackChannelID,
+        });
+      });
   });
 };
 
@@ -239,8 +247,8 @@ export const SendSlackNotification = async (proposal: Proposal) => {
               text: 'Open Voting Modal',
             },
             value: `${proposal.chain_id}-${proposal.id}`,
-            action_id: 'vote'
-          }
+            action_id: 'vote',
+          },
         ],
       },
       {
@@ -282,4 +290,4 @@ export const voteInputToOption = (input: string): VoteOption => {
     default:
       return VoteOption.VOTE_OPTION_UNSPECIFIED;
   }
-}
+};

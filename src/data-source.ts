@@ -22,7 +22,6 @@ export const AppDataSource = new DataSource({
 });
 
 export const populateDB = async () => {
-
   let newProps = 0;
   let totalProps = 0;
 
@@ -77,11 +76,10 @@ export const indexTx = async (chain_name: string, hash: string) => {
   await AppDataSource.manager.save(vote);
 
   return vote;
-}
+};
 
 // Save transaction hash to index later in the database
 export const addTxToIndexingQueue = async (chain_name: string, hash: string) => {
-
   const queue = new Queue();
   queue.chain_name = chain_name;
   queue.hash = hash;
@@ -89,30 +87,28 @@ export const addTxToIndexingQueue = async (chain_name: string, hash: string) => 
   await AppDataSource.manager.save(queue);
 
   return queue;
-} 
+};
 
 export const processIndexingQueue = async () => {
-  let queueRepo = AppDataSource.getRepository(Queue);
+  const queueRepo = AppDataSource.getRepository(Queue);
 
-  let queue = await queueRepo.find()
+  const queue = await queueRepo.find();
 
   // Loop queue
   for (const tx of queue) {
-
     // Try to index
     try {
-      let vote = await indexTx(tx.chain_name, tx.hash);
-      
+      const vote = await indexTx(tx.chain_name, tx.hash);
+
       // Clear queue
       await AppDataSource.manager.delete(Queue, tx.hash);
-      console.log(`Indexed vote with hash ${vote.transaction_hash} option: ${vote.option}`)
-
+      console.log(`Indexed vote with hash ${vote.transaction_hash} option: ${vote.option}`);
     } catch (e) {
-      console.error(e)
-      tx.try_count = tx.try_count+1;
+      console.error(e);
+      tx.try_count = tx.try_count + 1;
       await AppDataSource.manager.save(tx);
     }
   }
 
-  console.log("Processed all the queue.")
-}
+  console.log('Processed all the queue.');
+};
