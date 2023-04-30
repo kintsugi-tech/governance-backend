@@ -1,4 +1,4 @@
-import { AppDataSource, populateDB } from './data-source';
+import { AppDataSource, populateDB, processIndexingQueue } from './data-source';
 import 'reflect-metadata';
 import { setupApi } from './api';
 import * as cron from 'node-cron';
@@ -8,9 +8,13 @@ import summarizeProposalDescription from './governance-ai';
 
 AppDataSource.initialize()
   .then(async () => {
-    // Scan proposals every 5 minutes
+    // Scan proposals every x minutes
     cron.schedule(cfg.ProposalScanFrequency, async () => {
+      // Scan proposals
       populateDB();
+
+      // Process indexing queue
+      processIndexingQueue();
     });
 
     // Setup Governance API (Default port 3031)

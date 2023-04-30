@@ -5,7 +5,7 @@ import { App, BlockAction, BlockElementAction, ButtonAction, SlackAction } from 
 import summarizeProposalDescription from './governance-ai';
 import { VoteOption } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
 import { voteProposal, VoteRequest } from './cosmos-signer';
-import { AppDataSource } from './data-source';
+import { AppDataSource, addTxToIndexingQueue } from './data-source';
 
 export const setupSlack = () => {
   // Setup slack bot
@@ -177,10 +177,14 @@ export const setupSlack = () => {
 
     voteProposal(propDb, {vote_option: voteInputToOption(vote_option), memo}).then(async (tx) => {
       // send message in thread
-      await client.chat.postMessage({ text: `✅ Voted ${vote_option} on ${proposal.chain} proposal #${proposal.id}! Tx hash: ${tx.transactionHash}`, thread_ts: ts, channel: cfg.SlackChannelID })
+      await client.chat.postMessage({ mrkdwn: true, text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${proposal.chain}/txs/${tx.transactionHash}|See in explorer>`, thread_ts: ts, channel: cfg.SlackChannelID })
+      
+      // add tx to indexing queue
+      addTxToIndexingQueue(proposal.chain, tx.transactionHash).catch((e) => logger.error(`Can't add tx to indexing queue. ${e}`));
+
     }).catch(async (error) => {
       logger.error(error)
-      await client.chat.postMessage({ text: `⚠ Error voting ${vote_option} on ${proposal.chain} proposal #${proposal.id}! ${error}`, thread_ts: ts, channel: cfg.SlackChannelID })
+      await client.chat.postMessage({ text: `⚠ Error voting ${vote_option} on ${proposal.chain} proposal #${proposal.id}! ⚠\n\`${error}\``, thread_ts: ts, channel: cfg.SlackChannelID })
     });
 
   });

@@ -1,6 +1,6 @@
 import { Proposal } from './entity/Proposal';
 import * as express from 'express';
-import { AppDataSource, populateDB } from './data-source';
+import { AppDataSource, addTxToIndexingQueue, indexTx, populateDB } from './data-source';
 import * as bp from 'body-parser';
 import * as cors from 'cors';
 
@@ -268,31 +268,14 @@ export const setupApi = () => {
       }
 
       try {
-        const tx_data = await getTxInfo(data.chain_name, hash);
-
-        if (tx_data == null) {
-          throw Error('Proposal not found');
-        }
-
-        const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log);
-
-        // Save vote
-        const vote = new Vote();
-        vote.proposal_id = vote_data.id;
-        vote.chain_id = chain.name;
-        vote.address = vote_data.voter;
-        vote.option = vote_data.option;
-        vote.transaction_hash = tx_data.tx_response.txhash;
-        vote.block_height = tx_data.tx_response.height;
-        vote.date = tx_data.tx_response.timestamp;
-        vote.rationale = tx_data.tx.body.memo;
-
-        await AppDataSource.manager.save(vote);
+        let vote = await indexTx(data.chain_name, hash);
         res.json(vote);
       } catch (error) {
         console.log(error);
 
-        // TODO: If tx fails because LCD is not responding, save hash somewhere so we can query later
+        // If tx fails because LCD is not responding, save hash somewhere so we can query later
+        addTxToIndexingQueue(data.chain_name, hash).catch((e) => console.log(`Error adding to queue: ${e}`));
+
         res.json({ success: false, message: error });
       }
     } else {
