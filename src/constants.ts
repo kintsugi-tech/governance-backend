@@ -13,7 +13,7 @@ export const CHAINS = [
     chain_id: 'juno-1',
     prefix: 'juno',
     voter_address: 'juno1juczud9nep06t0khghvm643hf9usw45r4v7lq6',
-    gasPrice: '0.001ujuno',
+    gasPrice: '0.0025ujuno',
   },
   {
     name: 'osmosis',
