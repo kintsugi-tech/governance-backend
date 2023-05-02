@@ -52,7 +52,7 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
   return await client.signAndBroadcast(
     account[0].address,
     [buildExecMessage(account[0].address, [message])],
-    'auto',
+    2,
     request.memo,
   );
 };
