@@ -20,7 +20,7 @@ export const CHAINS = [
     chain_id: 'osmosis-1',
     prefix: 'osmo',
     voter_address: 'osmo1juczud9nep06t0khghvm643hf9usw45rt9w535',
-    gasPrice: '0.001uosmo',
+    gasPrice: '0.0025uosmo',
   },
   {
     name: 'crescent',
@@ -55,7 +55,7 @@ export const CHAINS = [
     chain_id: 'comdex-1',
     prefix: 'comdex',
     voter_address: 'comdex1e64ezvwfy0tquprzum7e2aauxkqecnfpg0u222',
-    gasPrice: '0.001ucmdx',
+    gasPrice: '0.028ucmdx',
   },
   {
     name: 'bitsong',
