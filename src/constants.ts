@@ -27,7 +27,7 @@ export const CHAINS = [
     chain_id: 'crescent-1',
     prefix: 'cre',
     voter_address: 'cre1zegq2j52zh7g23k8dzfawwmz64j8d52uzand6e',
-    gasPrice: '0.001ucre',
+    gasPrice: '0.015ucre',
   },
   {
     name: 'stride',
