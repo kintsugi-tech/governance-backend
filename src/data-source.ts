@@ -6,6 +6,7 @@ import { CHAINS } from './constants';
 import { getAllProposals, getProposalVoteFromLog, getTxInfo } from './cosmos-client';
 import { SendSlackNotification } from './slack';
 import { Queue } from './entity/Queue';
+import { Chain } from './entity/Chain';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
@@ -16,7 +17,7 @@ export const AppDataSource = new DataSource({
   database: 'postgres',
   synchronize: true,
   logging: false,
-  entities: [Proposal, Vote, Queue],
+  entities: [Proposal, Vote, Queue, Chain],
   migrations: [],
   subscribers: [],
 });
