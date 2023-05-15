@@ -2,7 +2,6 @@ import 'reflect-metadata';
 import { DataSource } from 'typeorm';
 import { Proposal } from './entity/Proposal';
 import { Vote } from './entity/Vote';
-import { CHAINS } from './constants';
 import { getAllProposals, getProposalVoteFromLog, getTxInfo } from './cosmos-client';
 import { SendSlackNotification } from './slack';
 import { Queue } from './entity/Queue';
@@ -27,7 +26,10 @@ export const populateDB = async () => {
   let totalProps = 0;
 
   // Chain names are coming from cosmos-directory https://cosmos.directory/
-  for (const chain of CHAINS) {
+  const chainRepo = AppDataSource.getRepository(Chain);
+  const chains = await chainRepo.find();
+
+  for (const chain of chains) {
     // Query governance proposals of interested chains and save to database
     const proposals = await getAllProposals(chain.name);
 

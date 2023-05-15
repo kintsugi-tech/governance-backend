@@ -4,12 +4,13 @@ import { AppDataSource, addTxToIndexingQueue, indexTx } from './data-source';
 import * as bp from 'body-parser';
 import * as cors from 'cors';
 
-import { CHAINS, cfg } from './constants';
+import { cfg } from './constants';
 import { Vote } from './entity/Vote';
 import { Between, FindOptionsWhere, MoreThan } from 'typeorm';
 import { getAllAddresses } from './cosmos-client';
 import { getMondayOfWeek } from './utils';
 import { SendSlackNotification } from './slack';
+import { Chain } from 'entity/Chain';
 
 export const setupApi = () => {
   const app = express();
@@ -81,7 +82,7 @@ export const setupApi = () => {
     const propRepo = AppDataSource.getRepository(Proposal);
 
     // Calculate all the other addresses
-    const addresses = getAllAddresses(req.params.address);
+    const addresses = await getAllAddresses(req.params.address);
 
     const proposals = await propRepo
       .createQueryBuilder('proposal')
@@ -113,7 +114,7 @@ export const setupApi = () => {
     const propRepo = AppDataSource.getRepository(Proposal);
 
     // Calculate all the other addresses
-    const addresses = getAllAddresses(req.params.address);
+    const addresses = await getAllAddresses(req.params.address);
 
     const proposals = await propRepo
       .createQueryBuilder('proposal')
@@ -192,61 +193,6 @@ export const setupApi = () => {
     res.json({ monday, sunday, votes });
   });
 
-  // Save vote
-  app.post('/vote/:chain/:proposal_id', async (req, res) => {
-    // Validate
-    const { chain, proposal_id } = req.params;
-
-    if (chain === undefined || proposal_id === undefined) {
-      res.json({ success: false, message: 'Missing params' });
-      return;
-    }
-
-    if (CHAINS.find((el) => el.name === chain) === undefined) {
-      res.json({ success: false, message: 'Chain not found' });
-      return;
-    }
-
-    // Check if proposal exists
-    const propRepo = AppDataSource.getRepository(Proposal);
-    const prop = await propRepo.findOneBy({ id: parseInt(proposal_id), chain_id: chain });
-
-    if (prop === undefined || prop === null) {
-      res.json({ success: false, message: 'Proposal not found' });
-      return;
-    }
-
-    // Save vote in database
-    const data = req.body;
-
-    // Validate input
-    if (
-      data.proposal_id === undefined ||
-      data.chain_id === undefined ||
-      data.address === undefined ||
-      data.option === undefined ||
-      data.transaction_hash === undefined ||
-      data.block_height === undefined ||
-      data.date === undefined
-    ) {
-      res.json({ success: false, message: 'Missing params' });
-      return;
-    }
-
-    // Save
-    const vote = new Vote();
-    vote.proposal_id = data.proposal_id;
-    vote.chain_id = data.chain_id;
-    vote.address = data.address;
-    vote.option = data.option;
-    vote.transaction_hash = data.transaction_hash;
-    vote.block_height = data.block_height;
-    vote.date = data.date;
-
-    await AppDataSource.manager.save(vote);
-    res.json(vote);
-  });
-
   // Index txs
   app.put('/index_tx/:hash', async (req, res) => {
     const { hash } = req.params;
@@ -261,8 +207,10 @@ export const setupApi = () => {
 
     // Check if chain id is defined
     if (data.chain_name !== undefined) {
-      const chain = CHAINS.find((el) => el.name === data.chain_name);
-      if (chain === undefined) {
+
+      const chainRepo = AppDataSource.getRepository(Chain);
+      const chain = await chainRepo.findOneBy({name: data.chain_name});
+      if (chain === null) {
         res.json({ success: false, message: 'Chain not found' });
         return;
       }

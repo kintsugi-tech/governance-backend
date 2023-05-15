@@ -1,18 +1,25 @@
 import axios from 'axios';
 import { Proposal } from './entity/Proposal';
 import { bech32 } from 'bech32';
-import { CHAINS } from './constants';
+import { AppDataSource } from './data-source';
+import { Chain } from 'entity/Chain';
 
 // Return an array of all cosmos addresses by passing one of any chain
-export const getAllAddresses = (address: string) => {
+export const getAllAddresses = async (address: string) => {
   const decoded = bech32.decode(address);
 
+  const chainRepo = AppDataSource.getRepository(Chain);
+  const chains = await chainRepo.find();
+
   let addresses = [];
-  for (const chain of CHAINS) {
-    addresses.push(bech32.encode(chain.prefix, decoded.words));
+  for (const chain of chains) {
+    if (decoded.prefix !== chain.prefix) {
+      addresses.push(bech32.encode(chain.prefix, decoded.words));
+    } else {
+      addresses.push(chain.voter_address);
+    }
   }
 
-  addresses = [...addresses, ...CHAINS.map((el) => el.voter_address)];
   return addresses;
 };
 

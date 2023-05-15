@@ -22,7 +22,7 @@ const summarizeProposalDescription = async (proposal: Proposal): Promise<string>
     const data = response.data.choices;
     return '\n' + data[0].text;
   } catch (error) {
-    console.error('Error summarizing proposal');
+    console.error('Error summarizing proposal', error);
     return 'error creating summury of the proposal';
   }
 };
