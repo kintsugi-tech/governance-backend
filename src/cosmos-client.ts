@@ -2,7 +2,7 @@ import axios from 'axios';
 import { Proposal } from './entity/Proposal';
 import { bech32 } from 'bech32';
 import { AppDataSource } from './data-source';
-import { Chain } from 'entity/Chain';
+import { Chain } from './entity/Chain';
 
 // Return an array of all cosmos addresses by passing one of any chain
 export const getAllAddresses = async (address: string) => {
@@ -23,13 +23,13 @@ export const getAllAddresses = async (address: string) => {
   return addresses;
 };
 
-export const getAllProposals = async (chain_name: string) => {
+export const parseSDK45Proposals = async (chain: Chain) => {
   try {
-    console.log(`Fetching proposals for ${chain_name}..`);
+    console.log(`Fetching proposals for ${chain.name}..`);
 
     // GET only voting period proposals
     const res = await axios.get(
-      `https://rest.cosmos.directory/${chain_name}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`,
+      `https://rest.cosmos.directory/${chain.name}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`,
     );
 
     const proposals = [];
@@ -50,7 +50,59 @@ export const getAllProposals = async (chain_name: string) => {
 
     return proposals;
   } catch (error) {
-    console.error(`Failed to fetch proposals for chain: ${chain_name}`);
+    console.error(`Failed to fetch proposals for chain: ${chain.name}`, error);
+    return [];
+  }
+}
+
+export const parseSDK47Proposals = async (chain: Chain) => {
+  try {
+    console.log(`Fetching proposals for ${chain.name}..`);
+
+    // GET only voting period proposals
+    const res = await axios.get(
+      `https://rest.cosmos.directory/${chain.name}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`,
+    );
+
+    const proposals = [];
+
+    for (const prop of res.data.proposals) {
+
+      // Parse meta data
+      const meta = JSON.parse(prop.metadata);
+
+      const proposal = new Proposal();
+      proposal.id = prop.id;
+      proposal.voting_start = prop.voting_start_time;
+      proposal.voting_end = prop.voting_end_time;
+      proposal.meta = '{}';
+
+      proposal.type = "";
+      proposal.title = meta.title;
+      proposal.description = meta.summary;
+
+      proposals.push(proposal);
+    }
+
+    return proposals;
+  } catch (error) {
+    console.error(`Failed to fetch proposals for chain: ${chain.name}`, error);
+    return [];
+  }
+}
+
+export const getAllProposals = async (chain: Chain) => {
+  try {
+    switch (chain.sdk_version) {
+      case "v47":
+      case "v46":
+        return await parseSDK47Proposals(chain);
+      case "v45":
+      default:
+        return await parseSDK45Proposals(chain);
+    }
+  } catch (error) {
+    console.error(`Failed to fetch proposals for chain: ${chain.name}`, error);
     return [];
   }
 

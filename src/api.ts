@@ -10,7 +10,7 @@ import { Between, FindOptionsWhere, MoreThan } from 'typeorm';
 import { getAllAddresses } from './cosmos-client';
 import { getMondayOfWeek } from './utils';
 import { SendSlackNotification } from './slack';
-import { Chain } from 'entity/Chain';
+import { Chain } from './entity/Chain';
 
 export const setupApi = () => {
   const app = express();

@@ -5,8 +5,8 @@ import { cfg } from './constants';
 import { MsgExec } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
 import { MsgVote } from 'cosmjs-types/cosmos/gov/v1beta1/tx.js';
 import { VoteOption } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
-import { AppDataSource } from 'data-source';
-import { Chain } from 'entity/Chain';
+import { AppDataSource } from './data-source';
+import { Chain } from './entity/Chain';
 
 export interface VoteRequest {
   vote_option: VoteOption;

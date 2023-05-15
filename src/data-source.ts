@@ -31,7 +31,7 @@ export const populateDB = async () => {
 
   for (const chain of chains) {
     // Query governance proposals of interested chains and save to database
-    const proposals = await getAllProposals(chain.name);
+    const proposals = await getAllProposals(chain);
 
     // Insert into database
     for (const prop of proposals) {
