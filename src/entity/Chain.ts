@@ -23,7 +23,7 @@ export class Chain {
   @Column({ type: 'json', comment: 'LCDs' })
   lcds: JSON;
 
-  @Column({ comment: 'SDK Version'})
+  @Column({ comment: 'SDK Version' })
   sdk_version: string;
 
   @Column({ comment: 'Explorer URL', default: '' })
