@@ -11,7 +11,7 @@ export const getAllAddresses = async (address: string) => {
   const chainRepo = AppDataSource.getRepository(Chain);
   const chains = await chainRepo.find();
 
-  let addresses = [];
+  const addresses = [];
   for (const chain of chains) {
     if (decoded.prefix !== chain.prefix) {
       addresses.push(bech32.encode(chain.prefix, decoded.words));

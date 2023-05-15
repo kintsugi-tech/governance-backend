@@ -20,6 +20,6 @@ export class Chain {
   @Column({ type: 'json', comment: 'RPCs' })
   rpcs: JSON;
 
-  @Column({ comment: 'Explorer URL', default: "" })
+  @Column({ comment: 'Explorer URL', default: '' })
   explorer_url: string;
 }

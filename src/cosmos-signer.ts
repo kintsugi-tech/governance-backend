@@ -27,10 +27,10 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
   // Get chain info
 
   const chainRepo = AppDataSource.getRepository(Chain);
-  const chain_info = await chainRepo.findOneBy({name: proposal.chain_id});
+  const chain_info = await chainRepo.findOneBy({ name: proposal.chain_id });
 
   if (chain_info === null) {
-    throw Error("Chain not found");
+    throw Error('Chain not found');
   }
 
   console.log(chain_info, proposal.chain_id);
@@ -57,10 +57,5 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
     ).finish(),
   };
 
-  return await client.signAndBroadcast(
-    account[0].address,
-    [buildExecMessage(account[0].address, [message])],
-    2,
-    request.memo,
-  );
+  return await client.signAndBroadcast(account[0].address, [buildExecMessage(account[0].address, [message])], 2, request.memo);
 };

@@ -207,9 +207,8 @@ export const setupApi = () => {
 
     // Check if chain id is defined
     if (data.chain_name !== undefined) {
-
       const chainRepo = AppDataSource.getRepository(Chain);
-      const chain = await chainRepo.findOneBy({name: data.chain_name});
+      const chain = await chainRepo.findOneBy({ name: data.chain_name });
       if (chain === null) {
         res.json({ success: false, message: 'Chain not found' });
         return;
