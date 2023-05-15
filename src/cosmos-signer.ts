@@ -1,10 +1,12 @@
 import { GasPrice, SigningStargateClient } from '@cosmjs/stargate';
 import { Proposal } from './entity/Proposal';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
-import { CHAINS, cfg } from './constants';
+import { cfg } from './constants';
 import { MsgExec } from 'cosmjs-types/cosmos/authz/v1beta1/tx';
 import { MsgVote } from 'cosmjs-types/cosmos/gov/v1beta1/tx.js';
 import { VoteOption } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
+import { AppDataSource } from 'data-source';
+import { Chain } from 'entity/Chain';
 
 export interface VoteRequest {
   vote_option: VoteOption;
@@ -23,7 +25,13 @@ export const buildExecMessage = (grantee: string, messages: Array<any>) => {
 
 export const voteProposal = async (proposal: Proposal, request: VoteRequest) => {
   // Get chain info
-  const chain_info = CHAINS.find((e) => e.name === proposal.chain_id);
+
+  const chainRepo = AppDataSource.getRepository(Chain);
+  const chain_info = await chainRepo.findOneBy({ name: proposal.chain_id });
+
+  if (chain_info === null) {
+    throw Error('Chain not found');
+  }
 
   console.log(chain_info, proposal.chain_id);
   const wallet = await DirectSecp256k1HdWallet.fromMnemonic(cfg.VotingWalletMnemonic, {
@@ -33,7 +41,7 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
   const account = await wallet.getAccounts();
 
   const client = await SigningStargateClient.connectWithSigner(`https://rpc.cosmos.directory/${proposal.chain_id}`, wallet, {
-    gasPrice: GasPrice.fromString(chain_info.gasPrice),
+    gasPrice: GasPrice.fromString(chain_info.gas_prices),
   });
 
   client.registry.register('/cosmos.authz.v1beta1.MsgExec', MsgExec);
@@ -49,10 +57,5 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
     ).finish(),
   };
 
-  return await client.signAndBroadcast(
-    account[0].address,
-    [buildExecMessage(account[0].address, [message])],
-    2,
-    request.memo,
-  );
+  return await client.signAndBroadcast(account[0].address, [buildExecMessage(account[0].address, [message])], 2, request.memo);
 };
