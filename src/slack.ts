@@ -170,7 +170,7 @@ export const setupSlack = () => {
 
     // Vote Proposal
     const propRepo = AppDataSource.getRepository(Proposal);
-    const propDb = await propRepo.findOneBy({ id: proposal.id });
+    const propDb = await propRepo.findOneBy({ id: proposal.id, chain_id: proposal.chain });
 
     voteProposal(propDb, { vote_option: voteInputToOption(vote_option), memo })
       .then(async (tx) => {
