@@ -6,6 +6,7 @@ import summarizeProposalDescription from './governance-ai';
 import { VoteOption } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
 import { voteProposal } from './cosmos-signer';
 import { AppDataSource, addTxToIndexingQueue } from './data-source';
+import { Chain } from './entity/Chain';
 
 export const setupSlack = () => {
   // Setup slack bot
@@ -34,6 +35,11 @@ export const setupSlack = () => {
     // Get chain name and proposal id
     const [proposal_chain, proposal_id] = (<ButtonAction>typed_body.actions[0]).value.split('-');
 
+    // Get chain data
+    const chain_repo = AppDataSource.getRepository(Chain);
+    const chain_data = await chain_repo.findOneBy({ name: proposal_chain });
+
+    
     // Open modal
     try {
       const modal = await client.views.open({
@@ -132,7 +138,7 @@ export const setupSlack = () => {
               elements: [
                 {
                   type: 'mrkdwn',
-                  text: `Make sure to read the full proposal before voting!\n ↗️ <https://mintscan.io/${proposal_chain}/proposals/${proposal_id}|Proposal Details>`,
+                  text: `Make sure to read the full proposal before voting!\n ↗️ <https://mintscan.io/${chain_data.explorer_url}/proposals/${proposal_id}|Proposal Details>`,
                 },
               ],
             },
@@ -177,7 +183,7 @@ export const setupSlack = () => {
         // send message in thread
         await client.chat.postMessage({
           mrkdwn: true,
-          text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${proposal.chain}/txs/${tx.transactionHash}|See in explorer>`,
+          text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${proposal.chain.explorer_url}/txs/${tx.transactionHash}|See in explorer>`,
           thread_ts: ts,
           channel: cfg.SlackChannelID,
         });
@@ -203,6 +209,10 @@ export const SendSlackNotification = async (proposal: Proposal) => {
 
   // Summirize description
   const summuray = await summarizeProposalDescription(proposal);
+
+  // Load chain data
+  const chainRepo = AppDataSource.getRepository(Chain);
+  const chainData = await chainRepo.findOneBy({name: proposal.chain_id });
 
   const msg = {
     channel: cfg.SlackChannelID,
@@ -256,7 +266,7 @@ export const SendSlackNotification = async (proposal: Proposal) => {
         elements: [
           {
             type: 'mrkdwn',
-            text: `↗️ <https://mintscan.io/${proposal.chain_id}/proposals/${proposal.id}|Proposal Details>`,
+            text: `↗️ <https://mintscan.io/${chainData.explorer_url}/proposals/${proposal.id}|Proposal Details>`,
           },
         ],
       },

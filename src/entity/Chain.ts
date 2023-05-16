@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, OneToMany, PrimaryColumn } from 'typeorm';
+import { Proposal } from './Proposal';
 
 @Entity()
 export class Chain {
@@ -28,4 +29,10 @@ export class Chain {
 
   @Column({ comment: 'Explorer URL', default: '' })
   explorer_url: string;
+
+  @OneToMany(() => Proposal, (proposal) => proposal.chain_id)
+  @JoinColumn([
+    { name: 'name', referencedColumnName: 'chain_id' },
+  ])
+  proposals: Proposal[];
 }

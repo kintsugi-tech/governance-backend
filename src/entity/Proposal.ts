@@ -1,5 +1,6 @@
-import { Entity, PrimaryColumn, Column, OneToMany, JoinColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, JoinColumn, ManyToOne } from 'typeorm';
 import { Vote } from './Vote';
+import { Chain } from './Chain';
 
 @Entity()
 export class Proposal {
@@ -33,4 +34,10 @@ export class Proposal {
     { name: 'id', referencedColumnName: 'proposal_id' },
   ])
   votes: Vote[];
+
+  @ManyToOne(() => Chain, (chain) => chain.proposals, { eager: true })
+  @JoinColumn([
+    { name: 'chain_id', referencedColumnName: 'name' },
+  ])
+  chain: Chain;
 }
