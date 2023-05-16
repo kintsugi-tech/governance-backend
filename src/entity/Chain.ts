@@ -31,8 +31,6 @@ export class Chain {
   explorer_url: string;
 
   @OneToMany(() => Proposal, (proposal) => proposal.chain_id)
-  @JoinColumn([
-    { name: 'name', referencedColumnName: 'chain_id' },
-  ])
+  @JoinColumn([{ name: 'name', referencedColumnName: 'chain_id' }])
   proposals: Proposal[];
 }

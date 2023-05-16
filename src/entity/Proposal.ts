@@ -36,8 +36,6 @@ export class Proposal {
   votes: Vote[];
 
   @ManyToOne(() => Chain, (chain) => chain.proposals, { eager: true })
-  @JoinColumn([
-    { name: 'chain_id', referencedColumnName: 'name' },
-  ])
+  @JoinColumn([{ name: 'chain_id', referencedColumnName: 'name' }])
   chain: Chain;
 }
