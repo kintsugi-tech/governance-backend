@@ -78,8 +78,10 @@ export const setupSlack = () => {
               },
               element: {
                 type: 'plain_text_input',
+                max_length: 256,
                 action_id: 'memo_action',
                 multiline: false,
+                focus_on_load: true
               },
             },
             {
