@@ -8,7 +8,7 @@ export class Proposal {
   id: number;
 
   @PrimaryColumn({ comment: 'Chain name or id like: (juno-1, cosmoshub-4)' })
-  chain_id: string;
+  chain_name: string;
 
   @Column({ comment: 'Title of the proposal, from onchain' })
   title: string;
@@ -30,12 +30,12 @@ export class Proposal {
 
   @OneToMany(() => Vote, (vote) => vote.proposal)
   @JoinColumn([
-    { name: 'chain_id', referencedColumnName: 'chain_id' },
+    { name: 'chain_name', referencedColumnName: 'chain_id' },
     { name: 'id', referencedColumnName: 'proposal_id' },
   ])
   votes: Vote[];
 
   @ManyToOne(() => Chain, (chain) => chain.proposals, { eager: true })
-  @JoinColumn([{ name: 'chain_id', referencedColumnName: 'name' }])
+  @JoinColumn([{ name: 'chain_name', referencedColumnName: 'name' }])
   chain: Chain;
 }

@@ -27,20 +27,20 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
   // Get chain info
 
   const chainRepo = AppDataSource.getRepository(Chain);
-  const chain_info = await chainRepo.findOneBy({ name: proposal.chain_id });
+  const chain_info = await chainRepo.findOneBy({ name: proposal.chain_name });
 
   if (chain_info === null) {
     throw Error('Chain not found');
   }
 
-  console.log(chain_info, proposal.chain_id);
+  console.log(chain_info, proposal.chain_name);
   const wallet = await DirectSecp256k1HdWallet.fromMnemonic(cfg.VotingWalletMnemonic, {
     prefix: chain_info.prefix,
   });
 
   const account = await wallet.getAccounts();
 
-  const client = await SigningStargateClient.connectWithSigner(`https://rpc.cosmos.directory/${proposal.chain_id}`, wallet, {
+  const client = await SigningStargateClient.connectWithSigner(`https://rpc.cosmos.directory/${proposal.chain_name}`, wallet, {
     gasPrice: GasPrice.fromString(chain_info.gas_prices),
   });
 

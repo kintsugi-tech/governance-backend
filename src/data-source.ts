@@ -35,7 +35,7 @@ export const populateDB = async () => {
 
     // Insert into database
     for (const prop of proposals) {
-      prop.chain_id = chain.name;
+      prop.chain_name = chain.name;
       totalProps++;
 
       try {

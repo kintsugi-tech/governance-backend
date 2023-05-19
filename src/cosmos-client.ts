@@ -119,7 +119,7 @@ export const getTxInfo = async (chain_name: string, tx_hash: string) => {
     }
     return res.data;
   } catch (error) {
-    console.error(`Failed to fetch transaction for chain: ${chain_name}`);
+    console.error(`Failed to fetch transaction for chain: ${chain_name}`, error);
     return null;
   }
 
