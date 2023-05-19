@@ -145,7 +145,7 @@ export const setupApi = () => {
   app.get('/chain/:chain/proposals', async (req, res) => {
     const propRepo = AppDataSource.getRepository(Proposal);
     const proposals = await propRepo.findBy({
-      chain_name: req.params.chain,
+      chain_name_ex: req.params.chain,
     });
 
     let response = {};
@@ -237,7 +237,7 @@ export const setupApi = () => {
     const propRepo = AppDataSource.getRepository(Proposal);
     const proposals = await propRepo.findOne({
       where: {
-        chain_name: 'juno',
+        chain_name_ex: 'juno',
         id: 280,
       },
       relations: ['votes'],

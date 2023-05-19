@@ -178,7 +178,7 @@ export const setupSlack = () => {
 
     // Vote Proposal
     const propRepo = AppDataSource.getRepository(Proposal);
-    const propDb = await propRepo.findOneBy({ id: proposal.id, chain_name: proposal.chain });
+    const propDb = await propRepo.findOneBy({ id: proposal.id, chain_name_ex: proposal.chain });
 
     voteProposal(propDb, { vote_option: voteInputToOption(vote_option), memo })
       .then(async (tx) => {
@@ -214,17 +214,17 @@ export const SendSlackNotification = async (proposal: Proposal) => {
 
   // Load chain data
   const chainRepo = AppDataSource.getRepository(Chain);
-  const chainData = await chainRepo.findOneBy({name: proposal.chain_name });
+  const chainData = await chainRepo.findOneBy({name: proposal.chain_name_ex });
 
   const msg = {
     channel: cfg.SlackChannelID,
-    text: `[${proposal.chain_name}] #${proposal.id}: ${proposal.title}`,
+    text: `[${proposal.chain_name_ex}] #${proposal.id}: ${proposal.title}`,
     blocks: [
       {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: `[${proposal.chain_name}] #${proposal.id}: ${proposal.title}`,
+          text: `[${proposal.chain_name_ex}] #${proposal.id}: ${proposal.title}`,
           emoji: true,
         },
       },
@@ -233,7 +233,7 @@ export const SendSlackNotification = async (proposal: Proposal) => {
         fields: [
           {
             type: 'mrkdwn',
-            text: `*Chain:* ${proposal.chain_name}`,
+            text: `*Chain:* ${proposal.chain_name_ex}`,
           },
           {
             type: 'mrkdwn',
@@ -258,7 +258,7 @@ export const SendSlackNotification = async (proposal: Proposal) => {
               emoji: true,
               text: 'Open Voting Modal',
             },
-            value: `${proposal.chain_name}-${proposal.id}`,
+            value: `${proposal.chain_name_ex}-${proposal.id}`,
             action_id: 'vote',
           },
         ],

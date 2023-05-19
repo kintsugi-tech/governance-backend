@@ -30,7 +30,7 @@ export class Chain {
   @Column({ comment: 'Explorer URL', default: '' })
   explorer_url: string;
 
-  @OneToMany(() => Proposal, (proposal) => proposal.chain_name)
-  @JoinColumn([{ name: 'name', referencedColumnName: 'chain_name' }])
+  @OneToMany(() => Proposal, (proposal) => proposal.chain_name_ex)
+  @JoinColumn([{ name: 'name', referencedColumnName: 'chain_name_ex' }])
   proposals: Proposal[];
 }

@@ -32,7 +32,7 @@ export class Vote {
 
   @ManyToOne(() => Proposal, (prop) => prop.votes, { eager: true })
   @JoinColumn([
-    { name: 'chain_id', referencedColumnName: 'chain_name' },
+    { name: 'chain_id', referencedColumnName: 'chain_name_ex' },
     { name: 'proposal_id', referencedColumnName: 'id' },
   ])
   proposal: Proposal;

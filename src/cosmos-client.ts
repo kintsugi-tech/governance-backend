@@ -127,6 +127,8 @@ export const getTxInfo = async (chain_name: string, tx_hash: string) => {
 };
 
 export const getProposalVoteFromLog = (rawlog: string) => {
+
+  console.log(`RAW Log: |${rawlog}|`)
   // Parse log
   const [log] = JSON.parse(rawlog);
 
