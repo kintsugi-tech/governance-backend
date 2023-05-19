@@ -38,5 +38,4 @@ export class Proposal {
   @ManyToOne(() => Chain, (chain) => chain.proposals, { eager: true })
   @JoinColumn([{ name: 'chain_name_ex', referencedColumnName: 'name' }])
   chain: Chain;
-
 }
