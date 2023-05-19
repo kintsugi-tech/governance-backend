@@ -3,6 +3,7 @@ import { Proposal } from './entity/Proposal';
 import { bech32 } from 'bech32';
 import { AppDataSource } from './data-source';
 import { Chain } from './entity/Chain';
+import { VoteOption } from 'cosmjs-types/cosmos/gov/v1beta1/gov';
 
 // Return an array of all cosmos addresses by passing one of any chain
 export const getAllAddresses = async (address: string) => {
@@ -126,9 +127,7 @@ export const getTxInfo = async (chain_name: string, tx_hash: string) => {
   return;
 };
 
-export const getProposalVoteFromLog = (rawlog: string) => {
-
-  console.log(`RAW Log: |${rawlog}|`)
+export const getProposalVoteFromLog = (rawlog: string, chain_name: string) => {
   // Parse log
   const [log] = JSON.parse(rawlog);
 
@@ -137,8 +136,23 @@ export const getProposalVoteFromLog = (rawlog: string) => {
 
   // get option
   const option_attr = vote_event.attributes.find((e) => e.key === 'option');
-  // parse value
-  const { option, weight } = JSON.parse(option_attr.value);
+
+  let option = null;
+  let weight = null;
+
+  // Temp fix for mars (sdk 46). Ref: https://github.com/cosmos/cosmos-sdk/issues/16230
+  if (chain_name === "mars") {
+
+    let attr = option_attr.value.split(" ")[0].split(":")[1]
+    option = VoteOption[attr];
+    weight = "1.0";
+  } else {
+    // parse value
+    const attr = JSON.parse(option_attr.value);
+
+    option = attr.option;
+    weight = attr.weight;
+  }
 
   // get proposal_id
   const proposal_id_attr = vote_event.attributes.find((e) => e.key === 'proposal_id');

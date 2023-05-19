@@ -63,7 +63,7 @@ export const indexTx = async (chain_name: string, hash: string) => {
     throw Error('Proposal not found');
   }
 
-  const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log);
+  const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log, chain_name );
 
   // Save vote
   const vote = new Vote();
