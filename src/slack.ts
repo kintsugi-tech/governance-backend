@@ -185,7 +185,7 @@ export const setupSlack = () => {
         // send message in thread
         await client.chat.postMessage({
           mrkdwn: true,
-          text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${proposal.chain.explorer_url}/txs/${tx.transactionHash}|See in explorer>`,
+          text: `✅ Voted ${vote_option} on *${proposal.chain}* proposal *#${proposal.id}*! \nTx Hash: \`${tx.transactionHash}\`. \n\n↗️ <https://mintscan.io/${propDb.chain.explorer_url}/txs/${tx.transactionHash}|See in explorer>`,
           thread_ts: ts,
           channel: cfg.SlackChannelID,
         });
