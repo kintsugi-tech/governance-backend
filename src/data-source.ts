@@ -6,14 +6,15 @@ import { getAllProposals, getProposalVoteFromLog, getTxInfo } from './cosmos-cli
 import { SendSlackNotification } from './slack';
 import { Queue } from './entity/Queue';
 import { Chain } from './entity/Chain';
+import { cfg } from './constants';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  host: 'localhost',
-  port: 5432,
-  username: 'postgres',
-  password: 'postgres',
-  database: 'postgres',
+  host: cfg.DBHost,
+  port: cfg.DBPort,
+  username: cfg.DBUser,
+  password: cfg.DBPass,
+  database: cfg.DBName,
   synchronize: true,
   logging: false,
   entities: [Proposal, Vote, Queue, Chain],
