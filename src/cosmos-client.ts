@@ -161,7 +161,7 @@ export const getTxInfo = async (chain_name: string, tx_hash: string) => {
   return;
 };
 
-export const getProposalVoteFromLog = (rawlog: string, chain_name: string) => {
+export const getProposalVoteFromLog = (rawlog: string, chain_info: Chain) => {
   // Parse log
   const [log] = JSON.parse(rawlog);
 
@@ -175,7 +175,7 @@ export const getProposalVoteFromLog = (rawlog: string, chain_name: string) => {
   let weight = null;
 
   // Temp fix for mars (sdk 46). Ref: https://github.com/cosmos/cosmos-sdk/issues/16230
-  if (chain_name === "mars") {
+  if (["v46", "v47"].indexOf(chain_info.sdk_version) !== -1) {
 
     let attr = option_attr.value.split(" ")[0].split(":")[1]
     option = VoteOption[attr];

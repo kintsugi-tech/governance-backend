@@ -64,7 +64,10 @@ export const indexTx = async (chain_name: string, hash: string) => {
     throw Error('Proposal not found');
   }
 
-  const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log, chain_name );
+  const chainRepo = AppDataSource.getRepository(Chain);
+  const chain_info = await chainRepo.findOneBy({ name: chain_name });
+
+  const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log, chain_info );
 
   // Save vote
   const vote = new Vote();
