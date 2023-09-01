@@ -51,12 +51,12 @@ export const parseSDK45Proposals = async (chain: Chain) => {
 
     return proposals;
   } catch (error) {
-    console.error(`Failed to fetch proposals for chain: ${chain.name}`, error);
+    console.error(`Failed to fetch proposals for chain: ${chain.name} with SDK 45`, error);
     return [];
   }
 }
 
-export const parseSDK47Proposals = async (chain: Chain) => {
+export const parseSDK46Proposals = async (chain: Chain) => {
   try {
     console.log(`Fetching proposals for ${chain.name}..`);
 
@@ -87,7 +87,40 @@ export const parseSDK47Proposals = async (chain: Chain) => {
 
     return proposals;
   } catch (error) {
-    console.error(`Failed to fetch proposals for chain: ${chain.name}`, error);
+    console.error(`Failed to fetch proposals for chain: ${chain.name} with SDK 46`, error);
+    return [];
+  }
+}
+
+export const parseSDK47Proposals = async (chain: Chain) => {
+  try {
+    console.log(`Fetching proposals for ${chain.name}..`);
+
+    // GET only voting period proposals
+    const res = await axios.get(
+      `https://rest.cosmos.directory/${chain.name}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`,
+    );
+
+    const proposals = [];
+
+    for (const prop of res.data.proposals) {
+
+      const proposal = new Proposal();
+      proposal.id = prop.id;
+      proposal.voting_start = prop.voting_start_time;
+      proposal.voting_end = prop.voting_end_time;
+      proposal.meta = '{}';
+
+      proposal.type = "";
+      proposal.title = prop.title;
+      proposal.description = prop.summary;
+
+      proposals.push(proposal);
+    }
+
+    return proposals;
+  } catch (error) {
+    console.error(`Failed to fetch proposals for chain: ${chain.name} with SDK 47`, error);
     return [];
   }
 }
@@ -96,8 +129,9 @@ export const getAllProposals = async (chain: Chain) => {
   try {
     switch (chain.sdk_version) {
       case "v47":
-      case "v46":
         return await parseSDK47Proposals(chain);
+      case "v46":
+        return await parseSDK46Proposals(chain);
       case "v45":
       default:
         return await parseSDK45Proposals(chain);
