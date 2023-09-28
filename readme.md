@@ -5,6 +5,8 @@ This project is a governance bot designed to interact with Cosmos blockchain and
 ## Short Description
 The Cosmos Governance Slack Bot allows specified Slack users to fetch and vote on proposals from different Cosmos SDK versions. It integrates the CosmJS library for blockchain interactions and axios for HTTP requests, creating a seamless bridge between Cosmos blockchain and Slack.
 
+![Screenshot 2023-09-28 alle 12 00 32](https://github.com/kintsugi-tech/governance-backend/assets/543292/ecba3353-46e8-4571-a1de-0fe67001ed9d)
+
 ## Environment Setup
 
 ### Manual Setup
