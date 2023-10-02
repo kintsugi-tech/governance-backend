@@ -43,8 +43,8 @@ export const parseSDK45Proposals = async (chain: Chain) => {
       proposal.meta = '{}';
 
       proposal.type = prop.content['@type'];
-      proposal.title = prop.content.title;
-      proposal.description = prop.content.description;
+      proposal.title = prop.content.title ?? prop.content['@type'];
+      proposal.description = prop.content.description ?? "Empty description";
 
       proposals.push(proposal);
     }
