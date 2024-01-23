@@ -9,7 +9,7 @@ const summarizeProposalDescription = async (proposal: Proposal): Promise<string>
 
   try {
     const response = await openai.completions.create({
-      model: 'text-davinci-003',
+      model: 'gpt-3.5-turbo-instruct',
       prompt: `Summarize this in 5 bullet points:\n\n${proposal.description}`,
       temperature: 0.7,
       max_tokens: 256,
