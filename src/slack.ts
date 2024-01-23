@@ -27,7 +27,10 @@ export const setupSlack = () => {
 
     // Check if user is allowed
     if (cfg.SlackAllowedVoteUsers.indexOf(body.user.id) < 0) {
-      await say({ text: `User ${typed_body.user.name} is not allowed to vote proposals!`, thread_ts: typed_body.message.ts });
+      await say({
+        text: `User ${typed_body.user.name} (${typed_body.user.id}) is not allowed to vote proposals!`,
+        thread_ts: typed_body.message.ts,
+      });
       await ack();
       return;
     }
@@ -39,7 +42,6 @@ export const setupSlack = () => {
     const chain_repo = AppDataSource.getRepository(Chain);
     const chain_data = await chain_repo.findOneBy({ name: proposal_chain });
 
-    
     // Open modal
     try {
       const modal = await client.views.open({
@@ -81,7 +83,7 @@ export const setupSlack = () => {
                 max_length: 256,
                 action_id: 'memo_action',
                 multiline: false,
-                focus_on_load: true
+                focus_on_load: true,
               },
             },
             {
@@ -214,7 +216,7 @@ export const SendSlackNotification = async (proposal: Proposal) => {
 
   // Load chain data
   const chainRepo = AppDataSource.getRepository(Chain);
-  const chainData = await chainRepo.findOneBy({name: proposal.chain_name_ex });
+  const chainData = await chainRepo.findOneBy({ name: proposal.chain_name_ex });
 
   const msg = {
     channel: cfg.SlackChannelID,
