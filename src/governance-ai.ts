@@ -1,15 +1,14 @@
 import { Proposal } from 'entity/Proposal';
 import { cfg } from './constants';
-import { Configuration, OpenAIApi } from 'openai';
+import OpenAI from 'openai';
 
 const summarizeProposalDescription = async (proposal: Proposal): Promise<string> => {
-  const configuration = new Configuration({
-    apiKey: cfg.OpenAIAPIKey,
+  const openai = new OpenAI({
+    apiKey: cfg.OpenAIAPIKey, // This is also the default, can be omitted
   });
-  const openai = new OpenAIApi(configuration);
 
   try {
-    const response = await openai.createCompletion({
+    const response = await openai.completions.create({
       model: 'text-davinci-003',
       prompt: `Summarize this in 5 bullet points:\n\n${proposal.description}`,
       temperature: 0.7,
@@ -19,7 +18,7 @@ const summarizeProposalDescription = async (proposal: Proposal): Promise<string>
       presence_penalty: 0,
     });
 
-    const data = response.data.choices;
+    const data = response.choices;
     return '\n' + data[0].text;
   } catch (error) {
     console.error('Error summarizing proposal', error);
