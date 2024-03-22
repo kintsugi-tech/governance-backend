@@ -19,16 +19,19 @@ export class Chain {
   gas_prices: string;
 
   @Column({ type: 'json', comment: 'RPCs' })
-  rpcs: JSON;
+  rpcs: [string];
 
   @Column({ type: 'json', comment: 'LCDs' })
-  lcds: JSON;
+  lcds: [string];
 
   @Column({ comment: 'SDK Version' })
   sdk_version: string;
 
   @Column({ comment: 'Explorer URL', default: '' })
   explorer_url: string;
+
+  @Column({ comment: 'If set to true proposals will not be indexed anymore', default: false })
+  disabled: boolean;
 
   @OneToMany(() => Proposal, (proposal) => proposal.chain_name_ex)
   @JoinColumn([{ name: 'name', referencedColumnName: 'chain_name_ex' }])

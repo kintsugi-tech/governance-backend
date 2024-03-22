@@ -115,7 +115,7 @@ export const setupSlack = () => {
                   {
                     text: {
                       type: 'plain_text',
-                      text: 'Abstian 🤷',
+                      text: 'Abstain 🤷',
                       emoji: true,
                     },
                     value: 'abstain',

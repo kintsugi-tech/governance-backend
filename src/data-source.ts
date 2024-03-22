@@ -28,7 +28,11 @@ export const populateDB = async () => {
 
   // Chain names are coming from cosmos-directory https://cosmos.directory/
   const chainRepo = AppDataSource.getRepository(Chain);
-  const chains = await chainRepo.find();
+  const chains = await chainRepo.find({
+    where: {
+      disabled: false,
+    },
+  });
 
   for (const chain of chains) {
     // Query governance proposals of interested chains and save to database
@@ -67,7 +71,7 @@ export const indexTx = async (chain_name: string, hash: string) => {
   const chainRepo = AppDataSource.getRepository(Chain);
   const chain_info = await chainRepo.findOneBy({ name: chain_name });
 
-  const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log, chain_info );
+  const vote_data = getProposalVoteFromLog(tx_data.tx_response.raw_log, chain_info);
 
   // Save vote
   const vote = new Vote();

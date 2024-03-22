@@ -40,7 +40,16 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
 
   const account = await wallet.getAccounts();
 
-  const client = await SigningStargateClient.connectWithSigner(`https://rpc.cosmos.directory/${proposal.chain_name_ex}`, wallet, {
+  let rpcs = chain_info.rpcs;
+
+  let best_rpc = `https://rpc.cosmos.directory/${proposal.chain_name_ex}`;
+
+  // use rpcs
+  if (rpcs.length > 0) {
+    best_rpc = rpcs[0];
+  }
+
+  const client = await SigningStargateClient.connectWithSigner(best_rpc, wallet, {
     gasPrice: GasPrice.fromString(chain_info.gas_prices),
   });
 
