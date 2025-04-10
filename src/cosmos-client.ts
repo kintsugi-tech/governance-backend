@@ -35,7 +35,9 @@ export const parseSDK45Proposals = async (chain: Chain) => {
     }
 
     // GET only voting period proposals
-    const res = await axios.get(`${best_lcd}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`);
+    const res = await axios.get(
+      `${best_lcd}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=25&pagination.reverse=true`,
+    );
 
     const proposals = [];
 
@@ -71,7 +73,9 @@ export const parseSDK46Proposals = async (chain: Chain) => {
     }
 
     // GET only voting period proposals
-    const res = await axios.get(`${best_lcd}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`);
+    const res = await axios.get(
+      `${best_lcd}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=25&pagination.reverse=true`,
+    );
 
     const proposals = [];
 
@@ -110,7 +114,9 @@ export const parseSDK47Proposals = async (chain: Chain) => {
     }
 
     // GET only voting period proposals
-    const res = await axios.get(`${best_lcd}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`);
+    const res = await axios.get(
+      `${best_lcd}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=25&pagination.reverse=true`,
+    );
 
     const proposals = [];
 

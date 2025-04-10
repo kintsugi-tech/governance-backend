@@ -59,7 +59,7 @@ export const voteProposal = async (proposal: Proposal, request: VoteRequest) => 
     typeUrl: '/cosmos.gov.v1beta1.MsgVote',
     value: MsgVote.encode(
       MsgVote.fromPartial({
-        proposalId: proposal.id,
+        proposalId: BigInt(proposal.id),
         voter: chain_info.voter_address,
         option: request.vote_option,
       }),
