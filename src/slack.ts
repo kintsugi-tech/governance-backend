@@ -35,8 +35,9 @@ export const setupSlack = () => {
       return;
     }
 
-    // Get chain name and proposal id
-    const [proposal_chain, proposal_id] = (<ButtonAction>typed_body.actions[0]).value.split('-');
+    let button_elements = (<ButtonAction>typed_body.actions[0]).value.split('-');
+    const proposal_id = button_elements.pop(); // removes and returns the last element
+    const proposal_chain = button_elements.join('-'); // joins the remaining parts
 
     // Get chain data
     const chain_repo = AppDataSource.getRepository(Chain);
