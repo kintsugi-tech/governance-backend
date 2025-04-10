@@ -28,10 +28,14 @@ export const parseSDK45Proposals = async (chain: Chain) => {
   try {
     console.log(`Fetching proposals for ${chain.name}..`);
 
+    let best_lcd = `https://rest.cosmos.directory/${chain.name}`;
+
+    if (chain.lcds.length > 0) {
+      best_lcd = chain.lcds[0];
+    }
+
     // GET only voting period proposals
-    const res = await axios.get(
-      `https://rest.cosmos.directory/${chain.name}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`,
-    );
+    const res = await axios.get(`${best_lcd}/cosmos/gov/v1beta1/proposals?proposal_status=2&pagination.limit=5000`);
 
     const proposals = [];
 
@@ -44,7 +48,7 @@ export const parseSDK45Proposals = async (chain: Chain) => {
 
       proposal.type = prop.content['@type'];
       proposal.title = prop.content.title ?? prop.content['@type'];
-      proposal.description = prop.content.description ?? "Empty description";
+      proposal.description = prop.content.description ?? 'Empty description';
 
       proposals.push(proposal);
     }
@@ -54,21 +58,24 @@ export const parseSDK45Proposals = async (chain: Chain) => {
     console.error(`Failed to fetch proposals for chain: ${chain.name} with SDK 45`, error);
     return [];
   }
-}
+};
 
 export const parseSDK46Proposals = async (chain: Chain) => {
   try {
     console.log(`Fetching proposals for ${chain.name}..`);
 
+    let best_lcd = `https://rest.cosmos.directory/${chain.name}`;
+
+    if (chain.lcds.length > 0) {
+      best_lcd = chain.lcds[0];
+    }
+
     // GET only voting period proposals
-    const res = await axios.get(
-      `https://rest.cosmos.directory/${chain.name}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`,
-    );
+    const res = await axios.get(`${best_lcd}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`);
 
     const proposals = [];
 
     for (const prop of res.data.proposals) {
-
       // Parse meta data
       const meta = JSON.parse(prop.metadata);
 
@@ -78,7 +85,7 @@ export const parseSDK46Proposals = async (chain: Chain) => {
       proposal.voting_end = prop.voting_end_time;
       proposal.meta = '{}';
 
-      proposal.type = "";
+      proposal.type = '';
       proposal.title = meta.title;
       proposal.description = meta.summary;
 
@@ -90,28 +97,31 @@ export const parseSDK46Proposals = async (chain: Chain) => {
     console.error(`Failed to fetch proposals for chain: ${chain.name} with SDK 46`, error);
     return [];
   }
-}
+};
 
 export const parseSDK47Proposals = async (chain: Chain) => {
   try {
     console.log(`Fetching proposals for ${chain.name}..`);
 
+    let best_lcd = `https://rest.cosmos.directory/${chain.name}`;
+
+    if (chain.lcds.length > 0) {
+      best_lcd = chain.lcds[0];
+    }
+
     // GET only voting period proposals
-    const res = await axios.get(
-      `https://rest.cosmos.directory/${chain.name}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`,
-    );
+    const res = await axios.get(`${best_lcd}/cosmos/gov/v1/proposals?proposal_status=2&pagination.limit=5000`);
 
     const proposals = [];
 
     for (const prop of res.data.proposals) {
-
       const proposal = new Proposal();
       proposal.id = prop.id;
       proposal.voting_start = prop.voting_start_time;
       proposal.voting_end = prop.voting_end_time;
       proposal.meta = '{}';
 
-      proposal.type = "";
+      proposal.type = '';
       proposal.title = prop.title;
       proposal.description = prop.summary;
 
@@ -123,16 +133,16 @@ export const parseSDK47Proposals = async (chain: Chain) => {
     console.error(`Failed to fetch proposals for chain: ${chain.name} with SDK 47`, error);
     return [];
   }
-}
+};
 
 export const getAllProposals = async (chain: Chain) => {
   try {
     switch (chain.sdk_version) {
-      case "v47":
+      case 'v47':
         return await parseSDK47Proposals(chain);
-      case "v46":
+      case 'v46':
         return await parseSDK46Proposals(chain);
-      case "v45":
+      case 'v45':
       default:
         return await parseSDK45Proposals(chain);
     }
@@ -145,9 +155,22 @@ export const getAllProposals = async (chain: Chain) => {
 };
 
 export const getTxInfo = async (chain_name: string, tx_hash: string) => {
+  // Chain names are coming from cosmos-directory https://cosmos.directory/
+  const chainRepo = AppDataSource.getRepository(Chain);
+  const chain = await chainRepo.findOneBy({ name: chain_name });
+  if (chain === null) {
+    return null;
+  }
+
   try {
+    let best_lcd = `https://rest.cosmos.directory/${chain_name}`;
+
+    if (chain.lcds.length > 0) {
+      best_lcd = chain.lcds[0];
+    }
+
     // fetch tx
-    const res = await axios.get(`https://rest.cosmos.directory/${chain_name}/cosmos/tx/v1beta1/txs/${tx_hash}`);
+    const res = await axios.get(`${best_lcd}/cosmos/tx/v1beta1/txs/${tx_hash}`);
 
     if (res.data.tx_response.height === undefined) {
       throw Error('Not found');
@@ -175,11 +198,10 @@ export const getProposalVoteFromLog = (rawlog: string, chain_info: Chain) => {
   let weight = null;
 
   // Temp fix for mars (sdk 46). Ref: https://github.com/cosmos/cosmos-sdk/issues/16230
-  if (["v46", "v47"].indexOf(chain_info.sdk_version) !== -1) {
-
-    let attr = option_attr.value.split(" ")[0].split(":")[1]
+  if (['v46', 'v47'].indexOf(chain_info.sdk_version) !== -1) {
+    let attr = option_attr.value.split(' ')[0].split(':')[1];
     option = VoteOption[attr];
-    weight = "1.0";
+    weight = '1.0';
   } else {
     // parse value
     const attr = JSON.parse(option_attr.value);
