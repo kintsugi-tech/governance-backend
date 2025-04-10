@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { DataSource } from 'typeorm';
+import { DataSource, LessThan } from 'typeorm';
 import { Proposal } from './entity/Proposal';
 import { Vote } from './entity/Vote';
 import { getAllProposals, getProposalVoteFromLog, getTxInfo } from './cosmos-client';
@@ -103,7 +103,11 @@ export const addTxToIndexingQueue = async (chain_name: string, hash: string) => 
 export const processIndexingQueue = async () => {
   const queueRepo = AppDataSource.getRepository(Queue);
 
-  const queue = await queueRepo.find();
+  const queue = await queueRepo.find({
+    where: {
+      try_count: LessThan(20),
+    },
+  });
 
   // Loop queue
   for (const tx of queue) {
