@@ -209,7 +209,7 @@ export const setupSlack = () => {
     // Start your app
     await slack.start(process.env.PORT || 3000);
 
-    slack.logger.info('⚡️ Bolt app is running!');
+    console.log('⚡️ Bolt app is running!');
   })();
 };
 
