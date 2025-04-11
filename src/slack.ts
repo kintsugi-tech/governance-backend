@@ -22,12 +22,13 @@ export const setupSlack = () => {
   console.log(`Slack API listeining on socket.`);
 
   // Listen for vote button clicks and open a new modal asking for reason
-  slack.action('vote', async ({ body, ack, say, client, logger }) => {
+  slack.action('vote', async ({ body, ack, client, logger }) => {
     const typed_body = <BlockAction>body;
 
     // Check if user is allowed
     if (cfg.SlackAllowedVoteUsers.indexOf(body.user.id) < 0) {
-      await say({
+      await client.chat.postMessage({
+        channel: body.channel.id,
         text: `User ${typed_body.user.name} (${typed_body.user.id}) is not allowed to vote proposals!`,
         thread_ts: typed_body.message.ts,
       });
