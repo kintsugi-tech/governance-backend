@@ -15,6 +15,29 @@ export const setupSlack = () => {
     signingSecret: cfg.SlackSigningSecret,
     appToken: cfg.SlackAppToken,
     socketMode: true,
+    logLevel: LogLevel.DEBUG,
+  });
+
+  // Add error handling for the app
+  slack.error(async (error) => {
+    console.error('An error occurred with the Slack app:', error);
+    return Promise.resolve();
+  });
+
+  // Add connection error handling
+  process.on('unhandledRejection', (error) => {
+    console.error('Unhandled promise rejection:', error);
+  });
+
+  // Add reconnection handling
+  process.on('SIGTERM', () => {
+    console.log('Received SIGTERM signal, attempting to restart...');
+    setTimeout(() => {
+      console.log('Attempting to restart Slack app...');
+      slack.start(process.env.PORT || 3000).catch((err) => {
+        console.error('Failed to restart Slack app:', err);
+      });
+    }, 5000);
   });
 
   // Listen for vote button clicks and open a new modal asking for reason
@@ -206,10 +229,20 @@ export const setupSlack = () => {
   });
 
   (async () => {
-    // Start your app
-    await slack.start(process.env.PORT || 3000);
-
-    console.log('⚡️ Bolt app is running!');
+    try {
+      // Start your app
+      await slack.start(process.env.PORT || 3000);
+      console.log('⚡️ Bolt app is running!');
+    } catch (error) {
+      console.error('Failed to start Slack app:', error);
+      // Attempt to restart after a delay
+      setTimeout(() => {
+        console.log('Attempting to restart Slack app...');
+        slack.start(process.env.PORT || 3000).catch((err) => {
+          console.error('Failed to restart Slack app:', err);
+        });
+      }, 5000);
+    }
   })();
 };
 
